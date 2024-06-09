@@ -33,16 +33,7 @@ const extractInfo = (page) => ({
   image: extractImage(page),
 });
 
-app.get('/random', (request, response) => {
-  axios.get('http://www.rrpicturearchives.net/showPicture.aspx?id=520316')
-    .then(({ data }) => {
-      response.send(extractInfo(data));
-    })
-    .catch((error) => {
-      console.error(error);
-      response.send('Something went wrong');
-    });
-});
+app.get('/random', images.getRandom);
 
 app.get('/models/:manufacturer?/:model?', models.get);
 app.get('/images/:model?/:source?', images.get);
