@@ -26,13 +26,27 @@ const getRandomModels = () => new Promise(async (resolve, reject) => {
     reject(error);
   }
 });
+const getManufacturerOfModel = (model) => new Promise((resolve, reject) => {
+  connection.query(`SELECT manufacturer FROM models WHERE model = '${model}'`, (error, results) => {
+    if (error) {
+      reject(error);
+    } else {
+        if (results.length) {
+        const [row1] = results;
+        const { manufacturer } = row1;
+        resolve(manufacturer);
+      } else {
+        resolve(undefined);
+      }
+    }
+  });
+});
 const getAllModelsInImage = ({ source }) => new Promise((resolve, reject) => {
   connection.query(`SELECT model FROM images WHERE source = '${source}'`, (error, results) => {
     if (error) {
       reject(error);
     } else {
       const models = results.map((row) => row.model);
-      console.log('all models in image', results, models);
       resolve(models);
     }
   });
@@ -46,19 +60,35 @@ const getOptionsList = (actualModels, randomModels) => {
   });
   return options;
 };
+const getManufacturers = (models) => new Promise(async (resolve) => {
+  try {
+    const manufacturers = [];
+    for (let index = 0; index < models.length; index += 1) {
+      const manufacturer = await getManufacturerOfModel(models[index]);
+      manufacturers.push(manufacturer);
+    }
+    resolve(manufacturers);
+  } catch {
+    resolve(models.map(() => undefined));
+  }
+});
 const getRandom = async (request, response) => {
   try {
     const allImages = await getAll('images');
     const image = pickRandom(allImages);
     const randomModels = await getRandomModels();
     const imageModels = await getAllModelsInImage(image);
+    const options = getOptionsList(imageModels, randomModels);
+    const manufacturers = await getManufacturers(options);
     response.send({
       source: image.source,
       models: imageModels,
-      options: getOptionsList(imageModels, randomModels),
+      options,
+      manufacturers,
     });
   } catch (error) {
-    response.reject(error);
+    console.error(error);
+    response.send(error);
   }
 };
 

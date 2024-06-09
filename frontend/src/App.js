@@ -37,15 +37,30 @@ function Checkbox({
   );
 }
 
+function generateOrder() {
+  const order = [0, 1, 2, 3];
+  const max = 10;
+  for (let iteration = 0; iteration < max; iteration += 1) {
+    const index1 = Math.floor(Math.random() * order.length);
+    const index2 = Math.floor(Math.random() * order.length);
+    const element2 = order[index2];
+    order[index2] = order[index1];
+    order[index1] = element2;
+  }
+  return order;
+}
+
 function App() {
   const [image, setImage] = useState();
   const [givenAnswers, setGivenAnswers] = useState([false, false, false, false]);
   const [correctAnswers, setCorrectAnswers] = useState([undefined, undefined, undefined, undefined]);
   const [submitted, setSubmitted] = useState(false);
+  const [order, setOrder] = useState(generateOrder());
 
   const loadNew = () => {
     axios.get('http://localhost:8000/random')
       .then(({ data }) => {
+        if (data.models.length > 4) { loadNew(); return; }
         setImage(data);
         setCorrectAnswers(data.options.map((model) => data.models.includes(model)));
       });
@@ -56,6 +71,7 @@ function App() {
       false,
       false,
     ]);
+    setOrder(generateOrder());
   };
   const onSubmit = (e) => {
     e.preventDefault();
@@ -73,6 +89,11 @@ function App() {
 
   useEffect(loadNew, []);
 
+  const modelName = (manufacturer, model) => {
+    if (manufacturer) return `${manufacturer} ${model}`;
+    return model
+  };
+
   if (!image) return 'Loading...';
   return (
     <main>
@@ -81,10 +102,10 @@ function App() {
         <span className="instructions">
           Select all locomotive models which appear in the picture.
         </span>
-        {image.options.map((model, index) => (
+        {order.map((index) => (
           <Checkbox
-            model={model}
-            key={`${image.source}-${model}`}
+            model={modelName(image.manufacturers[index], image.options[index])}
+            key={`${image.source}-${image.options[index]}`}
             value={givenAnswers[index]}
             correctValue={correctAnswers[index]}
             answerQuestion={answerQuestion}

@@ -60,7 +60,14 @@ form {
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
+@media (max-width: 600px) {
+  form > * {
+    grid-column-start: 1;
+    grid-column-end: 3;
+  }
+}
 
+button,
 label {
   display: flex;
   justify-content: flex-start;
@@ -73,6 +80,14 @@ label {
   cursor: pointer;
   overflow: hidden;
 }
+
+button {
+  justify-content: space-around;
+  background-color: transparent;
+}
+
+button:focus-visible,
+button:hover,
 label:has(input:focus-visible),
 label:has(input:hover),
 label:has(input:checked) {
