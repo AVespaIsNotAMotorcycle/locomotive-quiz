@@ -3,6 +3,7 @@ const cors = require('cors');
 const axios = require('axios');
 
 const models = require('./models');
+const images = require('./images');
 
 const app = express();
 app.use(express.json());
@@ -44,6 +45,7 @@ app.get('/random', (request, response) => {
 });
 
 app.get('/models/:manufacturer?/:model?', models.get);
+app.get('/images/:model?/:source?', images.get);
 
 app.get('/hello', (request, response) => response.send('Hello World!'));
 
